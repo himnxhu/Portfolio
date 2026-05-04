@@ -1,0 +1,58 @@
+.contact {
+  background-color: var(--background);
+}
+
+.content {
+  max-width: 600px;
+}
+
+.pitch {
+  font-size: 1.25rem;
+  margin-bottom: 3rem;
+  color: var(--neutral-800);
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.email {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--accent);
+  border-bottom: 4px solid transparent;
+  width: fit-content;
+  transition: border-color 0.2s ease;
+}
+
+.email:hover {
+  border-color: var(--accent);
+}
+
+.phone {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--neutral-800);
+}
+
+.social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  font-weight: 600;
+}
+
+.resume {
+  background-color: var(--neutral-900);
+  color: var(--background);
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.resume:hover {
+  background-color: var(--accent);
+  color: #000;
+}
