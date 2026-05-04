@@ -44,6 +44,18 @@ export const portfolioData = {
         github: "https://github.com",
       },
     },
+    {
+      title: "Team Task Manager",
+      description: "A collaborative full-stack platform for real-time project and task management.",
+      problem: "Teams needed a secure, scalable way to track progress and manage role-based permissions.",
+      tech: ["Node.js", "Express", "PostgreSQL", "React", "REST API"],
+      outcome: "Developed an interactive dashboard and secure authentication for efficient team collaboration.",
+      learning: "Optimizing database queries and implementing secure role-based access control (RBAC) are vital for enterprise-level applications.",
+      links: {
+        demo: "https://example.com",
+        github: "https://github.com",
+      },
+    },
   ],
   skills: [
     { category: "Programming", items: ["Python", "SQL", "Java"] },
