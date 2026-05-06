@@ -127,49 +127,6 @@
   border-radius: 10px;
 }
 
-.voicePanel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 10px;
-  background: var(--neutral-100);
-  border: 1px solid var(--neutral-200);
-  border-radius: 8px;
-}
-
-.voicePanel input {
-  min-width: 0;
-  border: 1px solid var(--neutral-200);
-  border-radius: 6px;
-  padding: 10px 12px;
-  background: var(--background);
-  color: var(--foreground);
-  font-size: 0.9rem;
-  outline: none;
-}
-
-.voicePanel input:focus {
-  border-color: var(--accent);
-}
-
-.voicePanel button {
-  border: none;
-  border-radius: 6px;
-  padding: 0 12px;
-  background: var(--foreground);
-  color: var(--background);
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.voicePanel button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .messages {
   display: flex;
   flex-direction: column;
