@@ -10,7 +10,9 @@ export default function AdminPage() {
   const [postTitle, setPostTitle] = useState("");
   const [postExcerpt, setPostExcerpt] = useState("");
   const [postContent, setPostContent] = useState("");
+  const [draftTopic, setDraftTopic] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -62,6 +64,38 @@ export default function AdminPage() {
     }
   };
 
+  const handleGenerateDraft = async () => {
+    if (!draftTopic.trim() || isGenerating) return;
+
+    setIsGenerating(true);
+
+    try {
+      const response = await fetch("/api/admin/draft-post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: draftTopic.trim(),
+          secret,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPostTitle(data.title || "");
+        setPostExcerpt(data.excerpt || "");
+        setPostContent(data.content || "");
+      } else {
+        alert(`Draft error: ${data.details || data.error || "Unable to generate draft"}`);
+      }
+    } catch (error) {
+      console.error("Draft error:", error);
+      alert("Failed to connect to the draft API.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   if (!isAuthorized) return <div className={styles.loading}>Authenticating...</div>;
 
   return (
@@ -71,6 +105,26 @@ export default function AdminPage() {
         
         <section className={styles.formSection}>
           <h2>Create New Blog Post</h2>
+          <div className={styles.aiDraftBox}>
+            <div className={styles.inputGroup}>
+              <label>Nami Draft Topic</label>
+              <textarea
+                value={draftTopic}
+                onChange={(e) => setDraftTopic(e.target.value)}
+                placeholder="Tell Nami the topic, angle, audience, or key points for the post..."
+                rows={3}
+                disabled={isGenerating || isPublishing}
+              />
+            </div>
+            <button
+              type="button"
+              className={styles.generateBtn}
+              onClick={handleGenerateDraft}
+              disabled={isGenerating || isPublishing || !draftTopic.trim()}
+            >
+              {isGenerating ? "Generating Draft..." : "Generate With Nami"}
+            </button>
+          </div>
           <form className={styles.form} onSubmit={handlePost}>
             <div className={styles.inputGroup}>
               <label>Post Title</label>
@@ -80,7 +134,7 @@ export default function AdminPage() {
                 onChange={(e) => setPostTitle(e.target.value)}
                 placeholder="e.g., The Future of Agentic AI"
                 required
-                disabled={isPublishing}
+                disabled={isPublishing || isGenerating}
               />
             </div>
             
@@ -92,7 +146,7 @@ export default function AdminPage() {
                 onChange={(e) => setPostExcerpt(e.target.value)}
                 placeholder="A brief hook for the readers..."
                 required
-                disabled={isPublishing}
+                disabled={isPublishing || isGenerating}
               />
             </div>
             
@@ -104,11 +158,11 @@ export default function AdminPage() {
                 placeholder="Write your full technical insight here..."
                 required
                 rows={10}
-                disabled={isPublishing}
+                disabled={isPublishing || isGenerating}
               />
             </div>
             
-            <button type="submit" className={styles.submitBtn} disabled={isPublishing}>
+            <button type="submit" className={styles.submitBtn} disabled={isPublishing || isGenerating}>
               {isPublishing ? "Publishing..." : "Publish Post"}
             </button>
           </form>
