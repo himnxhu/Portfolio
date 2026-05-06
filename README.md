@@ -41,7 +41,6 @@ For API-key based voice calls, set these server-side variables:
 ```bash
 OMNIDIM_API_KEY=
 OMNIDIM_AGENT_ID=
-OMNIDIM_FROM_NUMBER_ID=
 OMNIDIM_BASE_URL=https://backend.omnidim.io/api/v1
 ```
 

@@ -12,9 +12,6 @@ export async function dispatchOmniDimensionCall({
 }: DispatchCallParams) {
   const apiKey = process.env.OMNIDIM_API_KEY;
   const agentId = Number(process.env.OMNIDIM_AGENT_ID);
-  const fromNumberId = process.env.OMNIDIM_FROM_NUMBER_ID
-    ? Number(process.env.OMNIDIM_FROM_NUMBER_ID)
-    : undefined;
 
   if (!apiKey) {
     throw new Error("OMNIDIM_API_KEY is not configured");
@@ -22,10 +19,6 @@ export async function dispatchOmniDimensionCall({
 
   if (!Number.isInteger(agentId) || agentId <= 0) {
     throw new Error("OMNIDIM_AGENT_ID is not configured");
-  }
-
-  if (fromNumberId !== undefined && (!Number.isInteger(fromNumberId) || fromNumberId <= 0)) {
-    throw new Error("OMNIDIM_FROM_NUMBER_ID must be a positive integer");
   }
 
   const response = await fetch(`${OMNIDIM_BASE_URL}/calls/dispatch`, {
@@ -38,7 +31,6 @@ export async function dispatchOmniDimensionCall({
     body: JSON.stringify({
       agent_id: agentId,
       to_number: toNumber,
-      from_number_id: fromNumberId,
       call_context: {
         source: "portfolio",
         assistant: "Nami",
