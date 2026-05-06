@@ -32,7 +32,9 @@ export default function Projects() {
                 </div>
                 
                 <div className={styles.links}>
-                  <a href={project.links.demo} target="_blank" rel="noopener noreferrer" className={styles.link}>Live Demo</a>
+                  {project.links.demo && project.links.demo !== project.links.github && (
+                    <a href={project.links.demo} target="_blank" rel="noopener noreferrer" className={styles.link}>Live Demo</a>
+                  )}
                   <a href={project.links.github} target="_blank" rel="noopener noreferrer" className={styles.link}>GitHub</a>
                 </div>
               </div>

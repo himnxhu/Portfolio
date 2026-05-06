@@ -5,10 +5,12 @@ import Skills from "@/components/Skills";
 import Blog from "@/components/Blog";
 import Contact from "@/components/Contact";
 import AIChatbot from "@/components/AIChatbot";
+import ScrollObserver from "@/components/ScrollObserver";
 
 export default function Home() {
   return (
     <main>
+      <ScrollObserver />
       <Hero />
       <About />
       <Projects />
@@ -16,21 +18,6 @@ export default function Home() {
       <Blog />
       <Contact />
       <AIChatbot />
-      
-      {/* Simple script for fade-in animations */}
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-              }
-            });
-          }, { threshold: 0.1 });
-          
-          document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-        `
-      }} />
     </main>
   );
 }

@@ -1,18 +1,30 @@
 .about {
-  background-color: var(--neutral-100);
+  position: relative;
+  z-index: 1;
 }
 
 .content {
-  max-width: 800px;
+  max-width: 850px;
+  background-color: rgba(var(--background-rgb), 0.5);
+  backdrop-filter: blur(10px);
+  padding: 3rem;
+  border-radius: 16px;
+  border: 1px solid var(--neutral-200);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 }
 
 .story {
-  font-size: 1.5rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
   margin-bottom: 2rem;
   color: var(--foreground);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
 }
 
 .motivation {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   color: var(--neutral-800);
+  line-height: 1.8;
+  padding-left: 1.5rem;
+  border-left: 4px solid var(--accent);
 }

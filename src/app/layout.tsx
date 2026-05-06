@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
-import { Syne, Manrope } from "next/font/google";
+import { Fraunces, DM_Sans } from "next/font/google";
 import Header from "@/components/Header";
+import AIChatbot from "@/components/AIChatbot";
 import "./globals.css";
 
-const syne = Syne({
-  variable: "--font-syne",
+const displayFont = Fraunces({
+  variable: "--font-display",
   subsets: ["latin"],
+  display: 'swap',
 });
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const bodyFont = DM_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "Dev Portfolio | Himanshu Upadhyay",
-  description: "Data Analyst & AI Application Developer portfolio.",
+  title: "Himanshu Upadhyay",
+  description: "Data Analyst & AI Application Developer Portfolio",
 };
 
 export default function RootLayout({
@@ -24,10 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${syne.variable} ${manrope.variable}`}>
+    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
       <body className="antialiased">
         <Header />
         {children}
+        <AIChatbot />
       </body>
     </html>
   );
