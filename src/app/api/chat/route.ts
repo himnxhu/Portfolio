@@ -1,14 +1,59 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { portfolioData } from "@/data/portfolio";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+export const maxDuration = 10;
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
+function getGeminiText(data: unknown) {
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "candidates" in data &&
+    Array.isArray(data.candidates)
+  ) {
+    const candidate = data.candidates[0];
+    const parts = candidate?.content?.parts;
+
+    if (Array.isArray(parts)) {
+      return parts
+        .map((part) => (typeof part?.text === "string" ? part.text : ""))
+        .join("")
+        .trim();
+    }
+  }
+
+  return "";
+}
+
+function getGeminiError(data: unknown) {
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "error" in data &&
+    typeof data.error === "object" &&
+    data.error !== null &&
+    "message" in data.error &&
+    typeof data.error.message === "string"
+  ) {
+    return data.error.message;
+  }
+
+  return "Gemini request failed";
+}
 
 export async function POST(req: Request) {
   try {
     const { message } = await req.json();
+    const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!apiKey) {
       return Response.json({ error: "API Key not configured" }, { status: 500 });
+    }
+
+    if (typeof message !== "string" || message.trim().length === 0) {
+      return Response.json({ error: "Message is required" }, { status: 400 });
     }
 
     const systemPrompt = `
@@ -30,23 +75,61 @@ export async function POST(req: Request) {
       - Mention ${portfolioData.availability} if asked about availability.
     `;
 
-    // Modern way to set system instructions for Gemini 2.0
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
-      systemInstruction: systemPrompt,
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8_000);
 
-    const result = await model.generateContent(message);
-    const response = result.response;
-    const text = response.text();
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: systemPrompt }],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: message.slice(0, 1_000) }],
+            },
+          ],
+          generationConfig: {
+            maxOutputTokens: 300,
+            temperature: 0.4,
+          },
+        }),
+      }
+    );
+
+    clearTimeout(timeout);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return Response.json(
+        {
+          error: "Failed to process chat",
+          details: getGeminiError(data),
+        },
+        { status: 502 }
+      );
+    }
+
+    const text = getGeminiText(data);
+
+    if (!text) {
+      return Response.json({
+        text: "I couldn't generate a response right now. Please try again in a moment.",
+      });
+    }
 
     return Response.json({ text });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Chat Error:", error);
     return Response.json({ 
       error: "Failed to process chat", 
-      details: error.message,
-      status: error.status 
+      details: getErrorMessage(error),
     }, { status: 500 });
   }
 }

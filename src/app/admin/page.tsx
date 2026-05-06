@@ -18,8 +18,10 @@ export default function AdminPage() {
     const SECRET_KEY = "himanshu@2026";
 
     if (password === SECRET_KEY) {
-      setIsAuthorized(true);
-      setSecret(password);
+      queueMicrotask(() => {
+        setIsAuthorized(true);
+        setSecret(password);
+      });
     } else {
       alert("Access Denied: Only accessible by Himanshu");
       router.push("/");

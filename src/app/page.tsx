@@ -4,7 +4,6 @@ import Projects from "@/components/Projects";
 import Skills from "@/components/Skills";
 import Blog from "@/components/Blog";
 import Contact from "@/components/Contact";
-import AIChatbot from "@/components/AIChatbot";
 import ScrollObserver from "@/components/ScrollObserver";
 
 export default function Home() {
@@ -17,7 +16,6 @@ export default function Home() {
       <Skills />
       <Blog />
       <Contact />
-      <AIChatbot />
     </main>
   );
 }

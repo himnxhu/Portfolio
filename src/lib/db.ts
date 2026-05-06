@@ -1,10 +1,35 @@
-import { Pool } from 'pg';
+import type { Pool, QueryResultRow } from "pg";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-});
+let pool: Pool | undefined;
 
-export const query = (text: string, params?: any[]) => pool.query(text, params);
+async function getPool() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is not configured");
+  }
 
-export default pool;
+  if (!pool) {
+    const { Pool } = await import("pg");
+
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl:
+        process.env.NODE_ENV === "production"
+          ? { rejectUnauthorized: false }
+          : false,
+      max: Number(process.env.PG_POOL_MAX ?? 2),
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 5_000,
+      allowExitOnIdle: true,
+    });
+  }
+
+  return pool;
+}
+
+export async function query<T extends QueryResultRow = QueryResultRow>(
+  text: string,
+  params?: unknown[]
+) {
+  const activePool = await getPool();
+  return activePool.query<T>(text, params);
+}
