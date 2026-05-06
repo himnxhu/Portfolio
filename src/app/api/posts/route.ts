@@ -1,7 +1,10 @@
 import { query } from "@/lib/db";
+import { readJsonBody, RequestBodyTooLargeError } from "@/lib/request";
 import { NextResponse } from "next/server";
 
 let initTablePromise: Promise<void> | undefined;
+const POST_BODY_LIMIT_BYTES = 64 * 1024;
+const ADMIN_SECRET = process.env.ADMIN_SECRET ?? "himanshu@2026";
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown error";
@@ -36,7 +39,10 @@ const initTable = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-  })();
+  })().catch((error) => {
+    initTablePromise = undefined;
+    throw error;
+  });
 
   return initTablePromise;
 };
@@ -54,11 +60,30 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { title, excerpt, content, secret } = await req.json();
+    const { title, excerpt, content, secret } = await readJsonBody<{
+      title?: unknown;
+      excerpt?: unknown;
+      content?: unknown;
+      secret?: unknown;
+    }>(req, POST_BODY_LIMIT_BYTES);
 
     // Verify Secret
-    if (secret !== "himanshu@2026") {
+    if (secret !== ADMIN_SECRET) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (
+      typeof title !== "string" ||
+      typeof excerpt !== "string" ||
+      typeof content !== "string" ||
+      title.trim().length === 0 ||
+      excerpt.trim().length === 0 ||
+      content.trim().length === 0 ||
+      title.length > 160 ||
+      excerpt.length > 500 ||
+      content.length > 30_000
+    ) {
+      return NextResponse.json({ error: "Invalid post payload" }, { status: 400 });
     }
 
     await initTable();
@@ -74,6 +99,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json(result.rows[0]);
   } catch (error: unknown) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return NextResponse.json({ error: error.message }, { status: 413 });
+    }
+
     console.error("DB Error:", error);
     return NextResponse.json({ error: "Failed to create post", details: getErrorMessage(error) }, { status: 500 });
   }

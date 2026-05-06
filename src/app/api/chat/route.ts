@@ -1,6 +1,9 @@
 import { portfolioData } from "@/data/portfolio";
+import { readJsonBody, RequestBodyTooLargeError } from "@/lib/request";
 
 export const maxDuration = 10;
+
+const CHAT_BODY_LIMIT_BYTES = 4 * 1024;
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown error";
@@ -44,8 +47,13 @@ function getGeminiError(data: unknown) {
 }
 
 export async function POST(req: Request) {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
   try {
-    const { message } = await req.json();
+    const { message } = await readJsonBody<{ message?: unknown }>(
+      req,
+      CHAT_BODY_LIMIT_BYTES
+    );
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -76,7 +84,7 @@ export async function POST(req: Request) {
     `;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8_000);
+    timeout = setTimeout(() => controller.abort(), 8_000);
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
@@ -102,8 +110,6 @@ export async function POST(req: Request) {
       }
     );
 
-    clearTimeout(timeout);
-
     const data = await response.json();
 
     if (!response.ok) {
@@ -126,10 +132,16 @@ export async function POST(req: Request) {
 
     return Response.json({ text });
   } catch (error: unknown) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return Response.json({ error: error.message }, { status: 413 });
+    }
+
     console.error("Chat Error:", error);
     return Response.json({ 
       error: "Failed to process chat", 
       details: getErrorMessage(error),
     }, { status: 500 });
+  } finally {
+    if (timeout) clearTimeout(timeout);
   }
 }
