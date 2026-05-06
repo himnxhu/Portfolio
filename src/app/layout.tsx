@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
 import Header from "@/components/Header";
 import AIChatbot from "@/components/AIChatbot";
+import OmniDimensionWidget from "@/components/OmniDimensionWidget";
 import "./globals.css";
 
 const displayFont = Fraunces({
@@ -21,6 +22,11 @@ export const metadata: Metadata = {
   description: "Data Analyst & AI Application Developer Portfolio",
 };
 
+const webWidgetEnabled = Boolean(
+  process.env.NEXT_PUBLIC_OMNIDIM_WIDGET_EMBED_SCRIPT ||
+    process.env.NEXT_PUBLIC_OMNIDIM_WIDGET_SCRIPT_URL
+);
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,6 +38,7 @@ export default function RootLayout({
         <Header />
         {children}
         <AIChatbot />
+        {webWidgetEnabled && <OmniDimensionWidget />}
       </body>
     </html>
   );

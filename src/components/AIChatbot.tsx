@@ -14,13 +14,22 @@ interface ChatResponse {
   details?: string;
 }
 
+interface VoiceCallResponse {
+  success?: boolean;
+  message?: string;
+  error?: string;
+  details?: string;
+}
+
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     { role: "bot", text: "Hi! I'm Nami, Himanshu's AI assistant. How can I help you today?" }
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCalling, setIsCalling] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -84,6 +93,34 @@ export default function AIChatbot() {
     }
   };
 
+  const handleVoiceCall = async () => {
+    if (!phoneNumber.trim() || isCalling) return;
+
+    setIsCalling(true);
+
+    try {
+      const response = await fetch("/api/voice/call", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: phoneNumber.trim() }),
+      });
+
+      const data = (await response.json()) as VoiceCallResponse;
+
+      if (!response.ok || data.error) {
+        const errorMsg = data.details || data.error || "Unable to start call";
+        setMessages(prev => [...prev, { role: "bot", text: `Voice call failed: ${errorMsg}` }]);
+      } else {
+        setMessages(prev => [...prev, { role: "bot", text: data.message || "Nami is calling now." }]);
+        setPhoneNumber("");
+      }
+    } catch {
+      setMessages(prev => [...prev, { role: "bot", text: "Voice call failed. Please try again later." }]);
+    } finally {
+      setIsCalling(false);
+    }
+  };
+
   return (
     <div className={styles.container} ref={containerRef}>
       {isOpen && (
@@ -98,6 +135,18 @@ export default function AIChatbot() {
             <button onClick={() => setIsOpen(false)} aria-label="Close chat">×</button>
           </div>
           <div className={styles.body}>
+            <div className={styles.voicePanel}>
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="+91..."
+                disabled={isCalling}
+              />
+              <button onClick={handleVoiceCall} disabled={isCalling || !phoneNumber.trim()}>
+                {isCalling ? "Calling" : "Voice call"}
+              </button>
+            </div>
             <div className={styles.messages}>
               {messages.map((msg, i) => (
                 <div key={i} className={`${styles.message} ${styles[msg.role]}`}>
