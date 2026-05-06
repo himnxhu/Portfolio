@@ -6,6 +6,11 @@
   font-family: var(--font-body);
 }
 
+.withVoiceWidget {
+  right: auto;
+  left: 30px;
+}
+
 .trigger {
   width: 60px;
   height: 60px;
@@ -225,9 +230,24 @@
 }
 
 @media (max-width: 480px) {
+  .container {
+    right: 20px;
+    bottom: 20px;
+  }
+
+  .withVoiceWidget {
+    right: auto;
+    left: 20px;
+  }
+
   .window {
     width: calc(100vw - 40px);
     right: -10px;
     height: 70vh;
+  }
+
+  .withVoiceWidget .window {
+    right: auto;
+    left: -10px;
   }
 }

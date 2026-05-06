@@ -14,7 +14,11 @@ interface ChatResponse {
   details?: string;
 }
 
-export default function AIChatbot() {
+interface AIChatbotProps {
+  voiceWidgetEnabled?: boolean;
+}
+
+export default function AIChatbot({ voiceWidgetEnabled = false }: AIChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -85,7 +89,10 @@ export default function AIChatbot() {
   };
 
   return (
-    <div className={styles.container} ref={containerRef}>
+    <div
+      className={`${styles.container} ${voiceWidgetEnabled ? styles.withVoiceWidget : ""}`}
+      ref={containerRef}
+    >
       {isOpen && (
         <div className={styles.window}>
           <div className={styles.header}>
