@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   description: "Data Analyst & AI Application Developer Portfolio",
 };
 
-const voiceWidgetEnabled = Boolean(
+const webWidgetEnabled = Boolean(
   process.env.NEXT_PUBLIC_OMNIDIM_WIDGET_EMBED_SCRIPT ||
     process.env.NEXT_PUBLIC_OMNIDIM_WIDGET_SCRIPT_URL
 );
@@ -37,8 +37,8 @@ export default function RootLayout({
       <body className="antialiased">
         <Header />
         {children}
-        <AIChatbot voiceWidgetEnabled={voiceWidgetEnabled} />
-        {voiceWidgetEnabled && <OmniDimensionWidget />}
+        <AIChatbot />
+        {webWidgetEnabled && <OmniDimensionWidget />}
       </body>
     </html>
   );
