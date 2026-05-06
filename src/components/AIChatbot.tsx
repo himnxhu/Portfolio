@@ -8,6 +8,12 @@ interface Message {
   text: string;
 }
 
+interface ChatResponse {
+  text?: string;
+  error?: string;
+  details?: string;
+}
+
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -64,14 +70,14 @@ export default function AIChatbot() {
         body: JSON.stringify({ message: userMessage }),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as ChatResponse;
       if (!response.ok || data.error) {
-        const errorMsg = data.error || "Server error";
+        const errorMsg = data.details || data.error || "Server error";
         setMessages(prev => [...prev, { role: "bot", text: `Sorry, I'm having trouble connecting right now (${errorMsg}). Please check if the service is available.` }]);
       } else {
-        setMessages(prev => [...prev, { role: "bot", text: data.text }]);
+        setMessages(prev => [...prev, { role: "bot", text: data.text || "I couldn't generate a response right now. Please try again." }]);
       }
-    } catch (_error) {
+    } catch {
       setMessages(prev => [...prev, { role: "bot", text: "Something went wrong. Please try again later." }]);
     } finally {
       setIsLoading(false);

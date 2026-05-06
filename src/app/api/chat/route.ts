@@ -4,6 +4,8 @@ import { readJsonBody, RequestBodyTooLargeError } from "@/lib/request";
 export const maxDuration = 10;
 
 const CHAT_BODY_LIMIT_BYTES = 4 * 1024;
+const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+const GEMINI_TIMEOUT_MS = 20_000;
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown error";
@@ -84,13 +86,16 @@ export async function POST(req: Request) {
     `;
 
     const controller = new AbortController();
-    timeout = setTimeout(() => controller.abort(), 8_000);
+    timeout = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
         signal: controller.signal,
         body: JSON.stringify({
           systemInstruction: {
@@ -105,12 +110,15 @@ export async function POST(req: Request) {
           generationConfig: {
             maxOutputTokens: 300,
             temperature: 0.4,
+            thinkingConfig: {
+              thinkingBudget: 0,
+            },
           },
         }),
       }
     );
 
-    const data = await response.json();
+    const data = await response.json().catch(() => null);
 
     if (!response.ok) {
       return Response.json(
@@ -134,6 +142,16 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     if (error instanceof RequestBodyTooLargeError) {
       return Response.json({ error: error.message }, { status: 413 });
+    }
+
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return Response.json(
+        {
+          error: "Chat service timed out",
+          details: "Gemini did not respond in time. Please try again.",
+        },
+        { status: 504 }
+      );
     }
 
     console.error("Chat Error:", error);
